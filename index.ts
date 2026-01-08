@@ -14,9 +14,10 @@ async function main() {
   //   temperature: z.number().describe("The current temperature in Celsius"),
   //   condition: z.string().describe("A brief description of the weather condition"),
   // });
+  const userInputComment: Part = { text: "What is the weather in Las Vegas?" };
   const userInput: Content = {
     role: "user",
-    parts: [{ text: "What is the weather in Las Vegas?" }]
+    parts: [userInputComment]
   }
   const getWeatherDeclaration = {
     name: "getWeatherFromAPI",
@@ -66,7 +67,7 @@ async function main() {
     result = getWeatherFromAPI(functionCall?.args?.city as string);
   }
   const followUp = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     contents: [userInput,
       { role: "model", parts: [{ functionCall: functionCall }] },
       {
