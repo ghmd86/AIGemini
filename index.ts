@@ -20,7 +20,7 @@ async function main() {
     parts: [userInputComment]
   }
   const getWeatherDeclaration = {
-    name: "getWeatherFromAPI",
+    name: "get_weather",
     description: "Get the current weather for a given city",
     parameters: {
       type: Type.OBJECT,
@@ -46,50 +46,48 @@ async function main() {
         return `The current weather in ${city} is 30°C with clear skies.`;
     }
   }
-
+  const search_tool = { googleSearch: {} };
   const response = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL_NAME || "gemini-2.5-flash-lite",
     contents: [userInput],
     config: {
       thinkingConfig: { includeThoughts: true },
-      tools: [
-        {
-          functionDeclarations: [getWeatherDeclaration],
-        }
-      ]
-    }
-  });
-  const functionCall: FunctionCall | undefined = response?.candidates?.[0]?.content?.parts?.find(
-    part => part.functionCall
-  )?.functionCall;
-  let result;
-  if (functionCall && functionCall.name === "getWeatherFromAPI") {
-    result = getWeatherFromAPI(functionCall?.args?.city as string);
-  }
-  const followUp = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL_NAME || "gemini-2.5-flash-lite",
-    contents: [userInput,
-      { role: "model", parts: [{ functionCall: functionCall }] },
-      {
-        role: "function", parts: [{
-          functionResponse:
-          {
-            name: functionCall?.name,
-            response: { result: result }
-          }
-        }]
-      }],
-    config: {
-      thinkingConfig: { includeThoughts: true },
-      tools: [
-        {
-          functionDeclarations: [getWeatherDeclaration],
-        }
-      ]
+      tools: [ search_tool  ]
     }
   });
 
-  console.log("Follow-up response: ", followUp?.text);
+  console.log("Model response: ", response?.text);
+  // const functionCall: FunctionCall | undefined = response?.candidates?.[0]?.content?.parts?.find(
+  //   part => part.functionCall
+  // )?.functionCall;
+  // let result;
+  // if (functionCall && functionCall.name === "getWeatherFromAPI") {
+  //   result = getWeatherFromAPI(functionCall?.args?.city as string);
+  // }
+  // const followUp = await ai.models.generateContent({
+  //   model: process.env.GEMINI_MODEL_NAME || "gemini-2.5-flash-lite",
+  //   contents: [userInput,
+  //     { role: "model", parts: [{ functionCall: functionCall }] },
+  //     {
+  //       role: "function", parts: [{
+  //         functionResponse:
+  //         {
+  //           name: functionCall?.name,
+  //           response: { result: result }
+  //         }
+  //       }]
+  //     }],
+  //   config: {
+  //     thinkingConfig: { includeThoughts: true },
+  //     tools: [
+  //       {
+  //         functionDeclarations: [getWeatherDeclaration],
+  //       }
+  //     ]
+  //   }
+  // });
+
+  // console.log("Follow-up response: ", followUp?.text);
 }
 
 // const toolCall: FunctionCall | undefined = response?.functionCalls?.[0];
